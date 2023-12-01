@@ -1,9 +1,24 @@
 fun main() {
-    fun part1(input: List<String>): Int = input.sumOf { line ->
+    with(Day01) {
+        val firstTestInput: List<String> = readInput("Day01_test1")
+        check(solvePart1(firstTestInput) == 142)
+
+        val secondTestInput: List<String> = readInput("Day01_test2")
+        check(solvePart2(secondTestInput) == 281)
+
+        solvePart1(this.input).println()
+        solvePart2(this.input).println()
+    }
+}
+
+object Day01 {
+    val input: List<String> = readInput("Day01")
+
+    fun solvePart1(input: List<String>): Int = input.sumOf { line ->
         line.replace(Regex("[a-z]"), "").run { "${first()}${last()}".toInt() }
     }
 
-    fun part2(input: List<String>): Int {
+    fun solvePart2(input: List<String>): Int {
         with(
             mapOf(
                 "one" to "o1e",
@@ -28,14 +43,4 @@ fun main() {
             }
         }
     }
-
-    val firstTestInput: List<String> = readInput("Day01_test1")
-    check(part1(firstTestInput) == 142)
-
-    val secondTestInput: List<String> = readInput("Day01_test2")
-    check(part2(secondTestInput) == 281)
-
-    val input: List<String> = readInput("Day01")
-    part1(input).println()
-    part2(input).println()
 }
