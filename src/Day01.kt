@@ -1,17 +1,41 @@
 fun main() {
-    fun part1(input: List<String>): Int {
-        return input.size
+    fun part1(input: List<String>): Int = input.sumOf { line ->
+        line.replace(Regex("[a-z]"), "").run { "${first()}${last()}".toInt() }
     }
 
     fun part2(input: List<String>): Int {
-        return input.size
+        with(
+            mapOf(
+                "one" to "o1e",
+                "two" to "t2o",
+                "three" to "t3e",
+                "four" to "f4r",
+                "five" to "f5e",
+                "six" to "s6x",
+                "seven" to "s7n",
+                "eight" to "e8t",
+                "nine" to "n9e"
+            )
+        ) {
+            val wordDigitPattern = Regex(this.keys.joinToString("|"))
+
+            return input.sumOf { line ->
+                generateSequence(line) { currentString ->
+                    wordDigitPattern.find(currentString)?.let { numberWordMatch ->
+                        currentString.replaceFirst(numberWordMatch.value, this[numberWordMatch.value].toString())
+                    }
+                }.last().filter { it.isDigit() }.run { "${first()}${last()}".toInt() }
+            }
+        }
     }
 
-    // test if implementation meets criteria from the description, like:
-    val testInput = readInput("Day01_test")
-    check(part1(testInput) == 1)
+    val firstTestInput: List<String> = readInput("Day01_test1")
+    check(part1(firstTestInput) == 142)
 
-    val input = readInput("Day01")
+    val secondTestInput: List<String> = readInput("Day01_test2")
+    check(part2(secondTestInput) == 281)
+
+    val input: List<String> = readInput("Day01")
     part1(input).println()
     part2(input).println()
 }
