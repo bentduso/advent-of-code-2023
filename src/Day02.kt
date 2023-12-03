@@ -1,15 +1,11 @@
 fun main() {
     with(Day02) {
-        val firstTestInput: List<String> = readInput("Day02_test1")
-        check(solvePart1(firstTestInput) == 8)
-
-        /*
-        val secondTestInput: List<String> = readInput("Day02_test2")
-        check(solvePart2(secondTestInput) == 281)
-        */
+        val testInput: List<String> = readInput("Day02_test")
+        check(solvePart1(testInput) == 8)
+        check(solvePart2(testInput) == 2286)
 
         solvePart1(this.input).println()
-//      solvePart2(this.input).println()
+        solvePart2(this.input).println()
     }
 }
 
@@ -23,32 +19,40 @@ object Day02 {
     fun solvePart1(input: List<String>): Int =
         input.map { convertLineToGame(it) }.filter { it.isPossible }.sumOf { it.id }
 
-    fun solvePart2(input: List<String>): Int = input.size
+    fun solvePart2(input: List<String>): Int =
+        input.map { convertLineToGame(it) }.sumOf { it.powerOfMinimumCubes }
 
     private fun convertLineToGame(line: String): Game {
-        val (gameId: String, reveals: String) = line.split(": ")
-        val cubeReveals: Set<List<String>> = reveals.split(";")
-            .map { it.trim().split(", ").toList() }.toSet()
+        val (gameId: String, gameInformation: String) = line.split(": ")
+        val cubeReveals: Set<CubeReveal> = gameInformation.split(";").map { it.trim().createCubeReveal() }.toSet()
 
         return Game(gameId.filter { it.isDigit() }.toInt(), cubeReveals)
     }
 
-    data class Game(val id: Int, val cubeReveals: Set<List<String>>) {
+    private fun String.createCubeReveal(): CubeReveal =
+        this.split(", ").associate { it.split(" ")[1] to it.split(" ")[0].toInt() }
+            .run {
+                CubeReveal(
+                    getOrDefault("red", 0),
+                    getOrDefault("green", 0),
+                    getOrDefault("blue", 0)
+                )
+            }
+
+    data class CubeReveal(val redCubes: Int, val greenCubes: Int, val blueCubes: Int)
+
+    data class Game(val id: Int, val cubeReveals: Set<CubeReveal>) {
         var isPossible: Boolean = cubeReveals.all { isValidReveal(it) }
             private set
 
-        private fun isValidReveal(reveal: List<String>): Boolean {
-            val cubeAmounts: Map<String, Int> = tallyCubeCounts(reveal)
+        val powerOfMinimumCubes: Int
+            get() = with(cubeReveals) {
+                this.maxOf { it.redCubes } * this.maxOf { it.greenCubes } * this.maxOf { it.blueCubes }
+            }
 
-            return (cubeAmounts.getOrDefault("red", 0) <= MAX_RED_CUBES &&
-                    cubeAmounts.getOrDefault("green", 0) <= MAX_GREEN_CUBES &&
-                    cubeAmounts.getOrDefault("blue", 0) <= MAX_BLUE_CUBES)
-        }
-
-        private fun tallyCubeCounts(reveal: List<String>): Map<String, Int> = reveal.associate {
-            val (count: String, color: String) = it.split(" ")
-            color to count.toInt()
-        }
+        private fun isValidReveal(reveal: CubeReveal): Boolean =
+            with(reveal) {
+                this.redCubes <= MAX_RED_CUBES && this.greenCubes <= MAX_GREEN_CUBES && this.blueCubes <= MAX_BLUE_CUBES
+            }
     }
 }
-
